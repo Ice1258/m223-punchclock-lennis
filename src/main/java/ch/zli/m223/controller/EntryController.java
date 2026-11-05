@@ -9,12 +9,13 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
+import ch.zli.m223.dto.EntryDto;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import ch.zli.m223.model.Entry;
@@ -29,19 +30,20 @@ public class EntryController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Index all Entries.", description = "Returns a list of all entries.")
-    public List<Entry> index() {
-        return entryService.findAll();
+    public List<EntryDto> index() {
+        return entryService.findAll()
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Creates a new entry.", description = "Creates a new entry and returns the newly added entry.")
-
-
-    public Entry create(Entry entry) {
-       return entryService.createEntry(entry);
+    public EntryDto create(@NotNull @Valid EntryDto dto) {
+        Entry entry = toEntity(dto);
+        Entry created = entryService.createEntry(entry);
+        return toDto(created);
     }
 
 
@@ -55,12 +57,29 @@ public class EntryController {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(
-        summary = "Updates an entry.",
-        description = "Updates an entry by its id."
-    )
-    public Entry update(@PathParam("id") long id, Entry entry) {
-        return entryService.updateEntry(id, entry);
+    public EntryDto update(
+            @PathParam("id") long id,
+            @NotNull @Valid EntryDto dto) {
+
+        Entry entry = toEntity(dto);
+        Entry updated = entryService.updateEntry(id, entry);
+        return toDto(updated);
+    }
+
+
+    private Entry toEntity(EntryDto dto) {
+        Entry entry = new Entry();
+        entry.setCheckIn(dto.getCheckIn());
+        entry.setCheckOut(dto.getCheckOut());
+        return entry;
+    }
+
+    private EntryDto toDto(Entry entry) {
+        EntryDto dto = new EntryDto();
+        dto.setId(entry.getId());
+        dto.setCheckIn(entry.getCheckIn());
+        dto.setCheckOut(entry.getCheckOut());
+        return dto;
     }
 
 }
