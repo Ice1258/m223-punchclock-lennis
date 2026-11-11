@@ -52,8 +52,7 @@ public class CategoryController {
     @DELETE
     
     public void delete(@PathParam("id") Long id) {
-        categoryService.delete(id, category);
+        categoryService.delete(id);
     }
-
 
 }

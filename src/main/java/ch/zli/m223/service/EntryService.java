@@ -1,19 +1,27 @@
 package ch.zli.m223.service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.time.Duration;
+
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
+import ch.zli.m223.service.TimeSummaryService;
 import ch.zli.m223.model.Entry;
 import ch.zli.m223.repository.EntryRepository;
 
 @ApplicationScoped
 public class EntryService {
+    
     @Inject
     private EntryRepository entryRepository;
+    TimeSummaryService timeSummaryService;
+
 
     @Transactional
     public Entry createEntry(Entry entry) {
@@ -42,5 +50,14 @@ public class EntryService {
         existingEntry.setCheckOut(entry.getCheckOut());
 
         return existingEntry;
+    }
+
+    public Map<LocalDate, Duration> GetTimeSummaries() {
+        List<Entry> entries = entryRepository.listAll();
+
+        Map<LocalDate, Duration> summaries =
+                timeSummaryService.CalculateSummaryPerDay(entries);
+
+        return summaries;
     }
 }
