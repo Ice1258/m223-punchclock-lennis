@@ -16,6 +16,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import ch.zli.m223.model.Entry;
@@ -27,6 +29,10 @@ public class EntryController {
 
     @Inject
     EntryService entryService;
+
+    // Enthält die Claims des mitgeschickten Tokens (leer, wenn kein Authorization-Header da ist)
+    @Inject
+    JsonWebToken jwt;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -40,9 +46,11 @@ public class EntryController {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @SecurityRequirement(name = "BearerAuth")
     public EntryDto create(@NotNull @Valid EntryDto dto) {
         Entry entry = toEntity(dto);
-        Entry created = entryService.createEntry(entry);
+        // getName() liefert den "upn"-Claim, ohne Token ist er null
+        Entry created = entryService.createEntry(entry, jwt.getName());
         return toDto(created);
     }
 
@@ -79,6 +87,9 @@ public class EntryController {
         dto.setId(entry.getId());
         dto.setCheckIn(entry.getCheckIn());
         dto.setCheckOut(entry.getCheckOut());
+        if (entry.getUser() != null) {
+            dto.setUsername(entry.getUser().getUsername());
+        }
         return dto;
     }
 

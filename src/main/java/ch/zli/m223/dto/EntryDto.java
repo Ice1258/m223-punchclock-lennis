@@ -16,6 +16,11 @@ public class EntryDto {
     @Schema(readOnly = true)
     private Long id;
 
+    // Wird vom Server aus dem Token gesetzt, nicht vom Client
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Schema(readOnly = true)
+    private String username;
+
     @NotNull(message = "Check-in is required")
     private LocalDateTime checkIn;
 
@@ -28,6 +33,14 @@ public class EntryDto {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public LocalDateTime getCheckIn() {

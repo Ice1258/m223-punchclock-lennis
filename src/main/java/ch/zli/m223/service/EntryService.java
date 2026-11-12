@@ -9,10 +9,13 @@ import java.time.Duration;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 
 import ch.zli.m223.service.TimeSummaryService;
+import ch.zli.m223.model.ApplicationUser;
 import ch.zli.m223.model.Entry;
+import ch.zli.m223.repository.ApplicationUserRepository;
 import ch.zli.m223.repository.EntryRepository;
 
 @ApplicationScoped
@@ -23,8 +26,16 @@ public class EntryService {
     TimeSummaryService timeSummaryService;
 
 
+    @Inject
+    ApplicationUserRepository userRepository;
+
     @Transactional
-    public Entry createEntry(Entry entry) {
+    public Entry createEntry(Entry entry, String username) {
+        if (username != null) {
+            ApplicationUser user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new NotAuthorizedException("Unknown user", "Bearer"));
+            entry.setUser(user);
+        }
         entryRepository.persist(entry);
         return entry;
     }
