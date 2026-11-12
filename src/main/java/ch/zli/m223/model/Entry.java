@@ -25,6 +25,11 @@ public class Entry {
   @JoinColumn(name = "category_id")
   private Category category;
 
+  // Optional: Entries ohne Authorization-Header haben keinen User
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private ApplicationUser user;
+
   public Long getId() {
     return id;
   }
@@ -55,5 +60,13 @@ public class Entry {
 
   public void setCategory(Category category) {
     this.category = category;
+  }
+
+  public ApplicationUser getUser() {
+    return user;
+  }
+
+  public void setUser(ApplicationUser user) {
+    this.user = user;
   }
 }
